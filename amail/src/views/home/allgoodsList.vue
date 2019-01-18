@@ -5,12 +5,16 @@
                 <li class="item" v-for="(item,index) in allGoods" :key="index" @click="toDetail(item)">
                     <div class="content">
                         <img :src="item.shopImgs[0].imgUrl">
+                        <!-- <img src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3753685189,4245843287&fm=26&gp=0.jpg"> -->
                         <p class="title">{{item.goodsName}}</p>
+                        <!-- <p class="title">电风扇犯得上反对是否</p> -->
                         <div class="item-footer">
                             <p>
                                 <span class="price-icon">￥</span>
                                 <span class="price">{{item.goodsDetail[0].price}}</span>
                                 <span class="had-pay">{{item.goodsPayNum}}人已付款</span>
+                                <!-- <span class="price">3232</span>
+                                <span class="had-pay">6人已付款</span> -->
                             </p>
                         </div>
                     </div>
@@ -35,6 +39,7 @@ export default {
   data () {
     return {
       moreShow: false,
+      isMore: false,
       toTop: false,
       page: 1,
       allGoods: [],
@@ -44,12 +49,18 @@ export default {
   methods: {
     ...mapMutations({
       setList: 'GET_DETAIL'
+    //   moreSlect: 'MORE_SELECT'
     }),
+    // hide () {
+    //   const vm = this
+    //   vm.moreSlect(vm.isMore)
+    // },
     toDetail (item) {
       const vm = this
       vm.$router.replace({ path: '/goodsDetail' })
       vm.setList(item)
     },
+    // 获取商品信息
     getAllGoods () {
       const vm = this
       let page = vm.page
@@ -66,6 +77,7 @@ export default {
           console.log(err)
         })
     },
+    // 监听滚动事件
     listScroll () {
       const vm = this
       let scrollTop = this.$refs.listcontent.scrollTop
@@ -86,9 +98,17 @@ export default {
         vm.toTop = false
       }
     },
+    // 缓慢回到顶部
     top () {
       const vm = this
-      vm.$refs.listcontent.scrollTop = 0
+      let timer = setInterval(() => {
+        let scrollTop = vm.$refs.listcontent.scrollTop
+        let ispeed = Math.floor(-scrollTop / 6)
+        if (vm.$refs.listcontent.scrollTop === 0) {
+          clearInterval(timer)
+        }
+        vm.$refs.listcontent.scrollTop = scrollTop + ispeed
+      }, 30)
     }
   }
 }
@@ -131,6 +151,7 @@ export default {
             margin-top .1rem
             display flex
             flex-wrap wrap
+            margin-bottom .2rem
             .item
                 width 50%
                 // height 5.1rem

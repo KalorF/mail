@@ -1,6 +1,6 @@
 <template>
     <div class="home">
-        <div @click="search">
+        <div>
           <homehead></homehead>
         </div>
         <div class="topTab">
@@ -18,9 +18,9 @@
           </nav>
         </div> -->
         <!-- <i class="iconfont more" @click="selectMore">&#xe633;</i> -->
-        <goodsList></goodsList>
+        <!-- <goodsList></goodsList> -->
         <transition name="more">
-          <div class="select-more" v-show="isMore">
+          <div class="select-more" v-show="moreSelect">
               <div class="more-title">选择类型</div>
               <div class="more-content">
                 <div  @click="selectAll">全部</div>
@@ -34,6 +34,7 @@
 
 <script>
 import Vue from 'vue'
+import { mapGetters, mapMutations } from 'vuex'
 import { Tab, Tabs } from 'vant'
 import homehead from './head'
 import goodsList from './goodsList'
@@ -53,13 +54,24 @@ export default {
     goodsList,
     allgoodsList
   },
+  beforeRouteLeave (to, from, next) {
+    this.$destroy()
+    next()
+  },
   mounted () {
     this.getTypes()
   },
+  computed: {
+    ...mapGetters(['moreSelect'])
+  },
   methods: {
-    search () {
-      this.$router.push({ path: '/search' })
-    },
+    // search () {
+    //   this.$router.push({ path: '/search' })
+    // },
+    ...mapMutations({
+      moreSlect: 'MORE_SELECT'
+    }),
+    // 获取商品类型
     getTypes () {
       const vm = this
       vm.$http.post('/ShopTypeController/showAll')
@@ -74,19 +86,23 @@ export default {
           console.log(err)
         })
     },
+    // 选择商品类型
     selectMore () {
       const vm = this
       vm.isMore = !vm.isMore
+      vm.moreSlect(vm.isMore)
     },
     selectAll () {
       const vm = this
       vm.active = 0
       vm.isMore = false
+      vm.moreSlect(vm.isMore)
     },
     select (index) {
       const vm = this
       vm.active = index
       vm.isMore = false
+      vm.moreSlect(vm.isMore)
     }
     // toggle (index) {
     //   this.active = index
@@ -96,6 +112,8 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
+@import '~@/assets/styles/common.styl'
+
 .van-tab {
     text-align: left;
     padding-left: .1rem
@@ -133,19 +151,24 @@ export default {
   .select-more
     position absolute
     background #ffffff
-    top 14.5%
+    top 14.8%
     width 100%
-    z-index 10
+    z-index 13
     padding-bottom .4rem
     border-top 1px solid #eeeeee
+    box-shadow #cccccc 1px 3px 8px
     .more-title
       margin-left 4%
-      margin-top .2rem
-      color #aaaaaa
+      margin-top .25rem
+      vertical-align middle
+      padding-left .06rem
+      border-left 3px solid $themeColor
+      // color #a39e9e
+      color #6d6d6d
       font-size 15px
     .more-content
       position relative
-      top .2rem
+      top .25rem
       width 92%
       left 4%
       right 4%
@@ -154,6 +177,8 @@ export default {
         float left
         padding .15rem
         margin-right .2rem
+        border-radius 5px
+        color #3d3d3d
         border 1px solid #aaa
         margin-bottom .2rem
 .more-enter-active,.more-leave-active

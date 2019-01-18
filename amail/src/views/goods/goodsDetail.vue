@@ -4,12 +4,12 @@
             <div class="content" ref="content" >
                 <div class="head-first">
                     <div @click="back"><span class="iconfont">&#xe637;</span></div>
-                    <div @click="$router.replace({path: '/home'})"><span class="iconfont">&#xe602;</span></div>
+                    <div @click="$router.replace({path: '/shophome'})"><span class="iconfont">&#xe602;</span></div>
                     <div @click="$router.replace({path: '/shoppingCart'})"><span class="iconfont">&#xe672;</span></div>
                 </div>
                 <div class="head-second" :style="opacityStyle" v-show="!showHead">
                     <span @click="back" class="iconfont">&#xe637;</span>
-                    <span @click="$router.replace({path: '/home'})" class="iconfont">&#xe602;</span>
+                    <span @click="$router.replace({path: '/shophome'})" class="iconfont">&#xe602;</span>
                     <span @click="$router.replace({path: '/shoppingCart'})" class="iconfont">&#xe672;</span>
                 </div>
                 <van-swipe @change="onChange" class="swiper" :autoplay='3000'>
@@ -55,10 +55,12 @@
                         </div>
                         <div class="selNum">数量
                             <van-stepper
+                            @change="selCount"
                             v-model="number"
                             class="number"
                             integer
                             :min="1"
+                            :max="maxNumber"
                             /></div>
                     </div>
                     <button @click="confirmSel">确认选择</button>
@@ -90,12 +92,13 @@ export default {
   data () {
     return {
       current: 0,
-      active: 0,
+      active: -1,
       showSelect: false,
       showHead: true,
       number: 1,
       price: '',
-      stock: '',
+      stock: 0,
+      maxNumber: '10',
       property: '',
       totalPrice: 0,
       spec: '选择规格',
@@ -113,6 +116,7 @@ export default {
     next()
   },
   methods: {
+    // 监听滚动事件
     contentScroll () {
       const vm = this
       const top = vm.$refs.content.scrollTop
@@ -136,17 +140,26 @@ export default {
     },
     getFirstPriceStock () {
       const vm = this
-      vm.stock = vm.detail.goodsDetail[0].stock
+      vm.detail.goodsDetail.map(item => {
+        vm.stock += item.stock
+      })
+      //   vm.stock = vm.detail.goodsDetail[0].stock
       vm.price = vm.detail.goodsDetail[0].price
     },
+    // 选择规格
     selItem (index) {
       const vm = this
-      vm.active = index
       let sel = vm.$refs.sel
-      vm.price = vm.detail.goodsDetail[index].price
-      vm.stock = vm.detail.goodsDetail[index].stock
-      vm.property = vm.detail.goodsDetail[index].property
-      vm.selName = sel[index].innerHTML
+      if (vm.detail.goodsDetail[index].stock === 0) {
+        Toast('库存不足')
+      } else {
+        vm.active = index
+        vm.price = vm.detail.goodsDetail[index].price
+        vm.stock = vm.detail.goodsDetail[index].stock
+        vm.maxNumber = vm.detail.goodsDetail[index].stock
+        vm.property = vm.detail.goodsDetail[index].property
+        vm.selName = sel[index].innerHTML
+      }
     //   for (let i in sel) {
     //     if (index === i) {
     //       sel[i].style.border = '1px solid #F85300'
@@ -160,6 +173,13 @@ export default {
     //   sel[index].style.color = '#F85300'
     //   vm.selName = sel[index].innerHTML
     },
+    // 选择数量
+    selCount () {
+      const vm = this
+      if (vm.number === vm.maxNumber) {
+        Toast('已达到最大库存')
+      }
+    },
     confirmSel () {
       const vm = this
       if (vm.selName === '' || vm.selName === null) {
@@ -170,6 +190,7 @@ export default {
         vm.totalPrice = vm.price * vm.number
       }
     },
+    // 添加到购物车
     addToCart () {
       const vm = this
       if (vm.spec === '选择规格') {
@@ -192,6 +213,7 @@ export default {
     ...mapMutations({
       setOrder: 'GET_ORDER'
     }),
+    // 直接购买
     toPay () {
       const vm = this
       let list = []
@@ -207,18 +229,19 @@ export default {
         const item = { goodsId, goodsName, price, property, goodsAmount, imgUrl }
         list.push(item)
         const status = 0
-        const shopCars = []
+        const shopCars = -1
         const totalprice = vm.totalPrice
-        const orderDetail = { list, totalprice, status, shopCars }
+        const orderDetail = { list, totalprice, status, goodsId, shopCars }
         vm.$router.replace({ path: '/confirmOrder' })
         vm.setOrder(orderDetail)
       }
     },
+    // 返回上一页
     back () {
       const vm = this
       let path = ''
-      if (frompath === '/confirmOrder') {
-        path = '/home'
+      if (frompath === '/lvxiaoluo/confirmOrder') {
+        path = '/shophome'
       } else {
         path = frompath
       }
@@ -402,7 +425,7 @@ export default {
             font-weight bold
             font-size 16px
             padding-right .3rem
-            background $cartColor
+            background $themeColor
             padding-left .2rem
             border-top-right-radius 30px
             border-bottom-right-radius 30px
@@ -415,7 +438,7 @@ export default {
             padding-left .2rem
             padding-right .2rem
             font-weight bold
-            background #F9CE00
+            background #FFDC00
             border-top-left-radius 30px
             border-bottom-left-radius 30px
     .select-spec

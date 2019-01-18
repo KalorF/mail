@@ -49,6 +49,7 @@ export default {
     this.getData()
   },
   methods: {
+    // 获取物流信息
     getData () {
       const vm = this
       const shipper = vm.$route.query.shipper

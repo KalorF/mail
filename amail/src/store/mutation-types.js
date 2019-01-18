@@ -1,2 +1,5 @@
 export const GET_DETAIL = 'GET_DETAIL'
 export const GET_ORDER = 'GET_ORDER'
+export const MORE_SELECT = 'MORE_SELECT'
+export const SET_USERINFO = 'SET_USERINFO'
+export const ACTIVE_TAB = 'ACTIVE_TAB'

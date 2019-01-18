@@ -21,10 +21,10 @@
                             checked-color="#F85300"
                         >
                         </van-checkbox>
-                        <img :src="item.shopGoods.shopImgs[0].imgUrl" >
+                        <img :src="item.shopGoodsGetJson.shopImgs[0].imgUrl" >
                         <div class="content2">
                             <div class="title">
-                            {{item.shopGoods.goodsName}}
+                            {{item.shopGoodsGetJson.goodsName}}
                             </div>
                             <div class="guige">
                                 <p>规格：{{item.property}}</p>
@@ -32,10 +32,12 @@
                             <div class="footer">
                                 <div class="number">
                                     <van-stepper
+                                    @change="selCount(item)"
                                     v-model="item.goodsAmount"
                                     class="number"
                                     integer
                                     :min="1"
+                                    :max="item.maxNumber"
                                     />
                                 </div>
                             </div>
@@ -112,6 +114,7 @@ export default {
     this.getData()
   },
   methods: {
+    // 监听滚动事件
     listScroll () {
       const top = this.$refs.list.scrollTop
       if (top > 15) {
@@ -123,13 +126,25 @@ export default {
         this.showHead = true
       }
     },
+    // 选择数量
+    selCount (item) {
+      if (item.goodsAmount === item.maxNumber) {
+        Toast('已达到最大库存')
+      }
+    },
+    // 获取购物车信息
     getData () {
       const vm = this
       vm.$http.post('/ShopCarController/showGoodsInShopCar')
         .then(res => {
           vm.list = res.data.data.shopCars
-          vm.list.map(value => {
-            vm.$set(value, 'checked', false)
+          vm.list.map(item => {
+            vm.$set(item, 'checked', false)
+            item.shopGoodsGetJson.goodsDetail.map(value => {
+              if (item.property === value.property) {
+                vm.$set(item, 'maxNumber', value.stock)
+              }
+            })
           })
           console.log(res)
         })
@@ -137,6 +152,7 @@ export default {
           console.log(err)
         })
     },
+    // 选择需要购买的商品
     check (data) {
       const vm = this
       console.log(vm.list)
@@ -154,6 +170,7 @@ export default {
         })
       }
     },
+    // 删除商品
     del (index) {
       const vm = this
       vm.showDialog = true
@@ -168,7 +185,6 @@ export default {
         done()
       }
     },
-    // 删除商品
     delshopCarId () {
       const vm = this
       const params = new URLSearchParams()
@@ -193,16 +209,16 @@ export default {
       for (let i in vm.list) {
         if (vm.list[i].checked === true) {
           const goodsId = vm.list[i].goodsId
-          const goodsName = vm.list[i].shopGoods.goodsName
+          const goodsName = vm.list[i].shopGoodsGetJson.goodsName
           const price = vm.list[i].price
           const property = vm.list[i].property
           const goodsAmount = vm.list[i].goodsAmount
-          const imgUrl = vm.list[i].shopGoods.shopImgs[0].imgUrl
+          const imgUrl = vm.list[i].shopGoodsGetJson.shopImgs[0].imgUrl
           const shopCarId = vm.list[i].shopCarId
-          const item2 = { shopCarId, goodsId }
+          // const item2 = { shopCarId }
           const item = { goodsId, goodsName, price, property, goodsAmount, imgUrl }
           list.push(item)
-          shopCars.push(item2)
+          shopCars.push(shopCarId)
         }
       }
       const status = 1

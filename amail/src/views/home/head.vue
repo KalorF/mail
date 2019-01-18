@@ -1,7 +1,7 @@
 <template>
    <div class="head-box">
        <i class="iconfont headImg">&#xe65a;</i>
-       <div class="input-div">
+       <div class="input-div" @click="$router.push({path: '/search'})">
             <input type="text" class="head-input" readonly placeholder="搜索商品">
        <i class="iconfont search">&#xe60a;</i>
        </div>

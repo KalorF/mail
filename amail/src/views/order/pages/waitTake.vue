@@ -23,6 +23,12 @@
                     <span>￥{{item.shopOrder.price}}</span>
                 </p>
             </div>
+            <div class="userMsg">
+                <div><span>收货人: </span><span>{{item.shopOrder.userName}}</span></div>
+            </div>
+            <div class="userMsg">
+                <div><span>联系方式: </span><span>{{item.shopOrder.phone}}</span></div>
+            </div>
             <div class="address">
                 <div>地址:</div>
                 <p>{{item.shopOrder.address}}</p>
@@ -45,16 +51,6 @@
           </div>
         </van-dialog>
 
-        <!-- <van-dialog
-          v-model="showDialog"
-          show-cancel-button
-          :before-close="refCfm"
-        >
-          <div class="dialogCont">
-            <p>提示</p>
-            <p>是否申请退款？</p>
-          </div>
-        </van-dialog> -->
     </div>
 </template>
 
@@ -65,7 +61,6 @@ Vue.use(Dialog).use(Toast)
 export default {
   data () {
     return {
-    //   showDialog: false,
       takeDialog: false,
       refIndex: '',
       takeIndex: '',
@@ -76,19 +71,7 @@ export default {
     this.getData()
   },
   methods: {
-    // refund (index) {
-    //   const vm = this
-    //   vm.showDialog = true
-    //   vm.refIndex = index
-    // },
-    // refCfm (action, done) {
-    //   if (action === 'confirm') {
-    //     setTimeout(done, 500)
-    //     Toast('申请成功')
-    //   } else {
-    //     done()
-    //   }
-    // },
+    // 获取订单信息
     getData () {
       const vm = this
       const params = new URLSearchParams()
@@ -102,6 +85,7 @@ export default {
           console.log(err)
         })
     },
+    // 确认收货
     cfmTake (index) {
       const vm = this
       vm.takeDialog = true
@@ -129,6 +113,7 @@ export default {
           console.log(err)
         })
     },
+    // 查看物流信息
     goLogs (item) {
       const vm = this
       const shipper = item.logistics.shipper
@@ -143,7 +128,7 @@ export default {
 @import '~@/assets/styles/common.styl'
 
 .wait-take
-    height 76vh
+    height 74.5vh
     background #f5f5f5
     position relative
     overflow-y auto
@@ -185,7 +170,8 @@ export default {
                 margin-top .2rem
                 margin-left .35rem
                 p:nth-child(1)
-                    font-size 16px
+                    font-size 15px
+                    line-height 20px
                 p:nth-child(2)
                     margin-top .2rem
                     font-size 13px
@@ -194,11 +180,12 @@ export default {
                 margin-left .2rem
                 margin-top .2rem
                 p:nth-child(1)
+                    text-align right
                     font-size 13px
                 p:nth-child(2)
                     font-size 13px
                     color #aaaaaa
-                    float right
+                    text-align right
                     margin-top .1rem
         .total
             margin-top .3rem
@@ -213,6 +200,16 @@ export default {
                     margin-right .2rem
                 span:nth-child(3)
                     font-size 15px
+        .userMsg
+            width 89%
+            margin-left auto
+            margin-right auto
+            height .3rem
+            line-height .3rem
+            margin-bottom .1rem
+            border-left 3px solid $themeColor
+            span:nth-child(1)
+                margin-left .1rem
         .address
             width 90%
             margin-left auto
@@ -222,7 +219,7 @@ export default {
             padding-bottom .3rem
             color #393E46
             div:nth-child(1)
-                border-left 3px solid #eeeeee
+                border-left 3px solid $themeColor
                 width 15%
                 padding-left .1rem
                 height .27rem

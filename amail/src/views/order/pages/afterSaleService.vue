@@ -1,12 +1,12 @@
 <template>
-    <div class="all-box">
+    <div class="after-sale">
         <div class="noOrder" v-if="!list.length">
             <i class="iconfont">&#xe603;</i>
             <div>无相关信息</div>
         </div>
         <div class="all-item" v-for="(item,index) in list" :key="index">
-            <div v-for="(goods, index) in item.shopOrderDetailList" :key="index" class="one-item">
-                <img :src="goods.imgUrl">
+            <div v-for="(goods, index) in item.shopOrderDetailList" :key="index " class="one-item">
+                <img :src="goods.imgUrl" >
                 <div class="title-text">
                     <p>{{goods.goodsName}}</p>
                     <p>规格：{{goods.goodsProperty}}</p>
@@ -33,54 +33,53 @@
                 <div>地址:</div>
                 <p>{{item.shopOrder.address}}</p>
             </div>
-            <div class="footer">
-                <button @click="sendRef(item.shopOrder.orderId)">申请退货</button>
-                <button @click="goLogs(item)">查看物流</button>
-                <button @click="del(item.shopOrder.orderId)">删除订单</button>
-            </div>
-            <!-- <div class="footer" v-if="item.shopOrder.shopStatus === 5">
-                <div class="wait">等待商家确认退货</div>
-                <button @click="goLogs(item)">查看物流</button>
-                <button @click="del(item.shopOrder.orderId)">删除订单</button>
+            <div class="footer" v-if="item.shopOrder.shopStatus === 5">
+                <div class="wait" v-if="item.logistics === null">等待商家审核退款</div>
+                <div class="wait" v-if="item.logistics !== null">等待商家审核退货</div>
             </div>
             <div class="footer" v-if="item.shopOrder.shopStatus === 6">
-                <div class="wait">商家已确认退货</div>
-                <button @click="writeLogs(item.shopOrder.orderId)">填写物流</button>
-                <button @click="del(item.shopOrder.orderId)">删除订单</button>
+                <div class="wait" v-if="item.logistics !== null">退货审核通过</div>
+                <button v-if="item.logistics !== null" @click="writeLogs(item.shopOrder.shopRefundRecord.shopRefundId)">填写物流</button>
+                <div class="wait" v-if="item.logistics === null">退款审核通过，待商家退款</div>
+            </div>
+            <div class="footer" v-if="item.shopOrder.shopStatus === 7">
+                <div class="wait" v-if="item.logistics === null">商家拒绝退款</div>
+                <button v-if="item.logistics === null" @click="refund(item.shopOrder.orderId)">再次申请</button>
+                <div class="wait" v-if="item.logistics !== null">商家拒绝退货</div>
+                <button v-if="item.logistics !== null" @click="refundgoods(item.shopOrder.orderId)">再次申请</button>
             </div>
             <div class="footer" v-if="item.shopOrder.shopStatus === 8">
-                <div class="wait">退货成功</div>
-                <button @click="del(item.shopOrder.orderId)">删除订单</button>
+                <div class="wait">退款成功</div>
             </div>
             <div class="footer" v-if="item.shopOrder.shopStatus === 9">
-                <div class="wait">等待商家确认收货</div>
-                <button @click="del(item.shopOrder.orderId)">删除订单</button>
-            </div> -->
+                <div class="wait">商品已寄出，等待商家收货</div>
+            </div>
         </div>
         <van-dialog
           v-model="showDialog"
-          show-cancel-button
-          :before-close="delCfm"
-        >
-          <div class="dialogCont">
-            <p>提示</p>
-            <p>是否删除此订单？</p>
-          </div>
-        </van-dialog>
-
-        <van-dialog
-          v-model="refDialog"
           show-cancel-button
           :confirmButtonText="'提交'"
           :before-close="refCfm"
         >
             <div class="refDialog">
-            <p>退货申请</p>
-            <textarea v-model="ref" class="textarea" placeholder="请填写退货原因" rows="3"></textarea>
+            <p>退款申请</p>
+            <textarea v-model="ref" class="textarea" placeholder="请填写退款原因" rows="3"></textarea>
             </div>
         </van-dialog>
 
-        <!-- <van-dialog
+        <van-dialog
+          v-model="goodsDialog"
+          show-cancel-button
+          :confirmButtonText="'提交'"
+          :before-close="goodsrefCfm"
+        >
+            <div class="refDialog">
+            <p>退货申请</p>
+            <textarea v-model="goodsref" class="textarea" placeholder="请填写退货原因" rows="3"></textarea>
+            </div>
+        </van-dialog>
+
+        <van-dialog
           v-model="logDialog"
           show-cancel-button
           :confirmButtonText="'提交'"
@@ -90,47 +89,59 @@
                 <p>填写物流信息</p>
                 <div>
                     <span>物流公司</span>
-                    <input type="text" v-model="logName" placeholder="请填写物流公司" />
+                    <select v-model='selected'>
+                      <option value="" selected disabled style="display:none;">选择物流公司</option>
+                      <option v-for="(item, index) in loglist" :key="index" :value ="item.value">
+                        {{item.value}}
+                      </option>
+                    </select>
                 </div>
                 <div>
                     <span>物流单号</span>
                     <input type="tel" v-model="logisticsCode" placeholder="请填写物流单号" />
                 </div>
             </div>
-        </van-dialog> -->
+        </van-dialog>
     </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import { Dialog, Toast } from 'vant'
-// import { logList } from '@/LogisticalCompany.js'
+import { logList } from '@/LogisticalCompany.js'
 Vue.use(Dialog).use(Toast)
 export default {
   data () {
     return {
       showDialog: false,
-      refDialog: false,
-      delIndex: '',
-      sedIdex: '',
+      list: [],
+      selected: '',
+      refIndex: '',
       ref: '',
-      list: []
-      //   logDialog: false,
-      //   logIndex: '',
-      //   logName: '',
-      //   logisticsCode: '',
-      //   logCode: '',
+      goodsDialog: false,
+      goodsref: '',
+      goodsrefIndex: '',
+      logDialog: false,
+      logIndex: '',
+      logName: '',
+      logisticsCode: '',
+      logCode: ''
     }
   },
   created () {
     this.getData()
+  },
+  computed: {
+    loglist () {
+      return logList
+    }
   },
   methods: {
     // 获取订单信息
     getData () {
       const vm = this
       const params = new URLSearchParams()
-      params.append('shopStatus', 2)
+      params.append('shopStatus', 5)
       vm.$http.post('/ShopOrderController/customerShopOrder', params)
         .then(res => {
           console.log(res)
@@ -140,17 +151,17 @@ export default {
           console.log(err)
         })
     },
-    // 退货申请
-    sendRef (item) {
+    // 退款申请
+    refund (index) {
       const vm = this
-      vm.refDialog = true
-      vm.sedIdex = item
+      vm.showDialog = true
+      vm.refIndex = index
     },
     refCfm (action, done) {
       const vm = this
       if (action === 'confirm') {
         if (vm.ref === '' || vm.ref === null) {
-          Toast('请填写退货原因')
+          Toast('请填写退款原因')
           setTimeout(done, 500)
         } else {
           vm.reqRef()
@@ -164,8 +175,7 @@ export default {
     reqRef () {
       const vm = this
       const params = new URLSearchParams()
-      //   params.append('openid', 1)
-      params.append('orderId', vm.sedIdex)
+      params.append('orderId', vm.refIndex)
       params.append('refundDesc', vm.ref)
       vm.$http.post('/ShopRefundRecordController/refundRequest', params)
         .then(res => {
@@ -178,92 +188,89 @@ export default {
           console.log(err)
         })
     },
-    // 删除订单
-    del (id) {
+    // 退货申请
+    refundgoods (index) {
       const vm = this
-      vm.showDialog = true
-      vm.delIndex = id
+      vm.goodsDialog = true
+      vm.goodsrefIndex = index
     },
-    delCfm (action, done) {
+    goodsrefCfm (action, done) {
+      const vm = this
       if (action === 'confirm') {
-        this.delOrder()
-        setTimeout(done, 500)
+        if (vm.goodsref === '' || vm.goodsref === null) {
+          Toast('请填写退货原因')
+          setTimeout(done, 500)
+        } else {
+          vm.goodsreqRef()
+          setTimeout(done, 500)
+        }
       } else {
+        vm.goodsref = ''
         done()
       }
     },
-    delOrder () {
+    goodsreqRef () {
       const vm = this
       const params = new URLSearchParams()
-      params.append('orderId', vm.delIndex)
-      vm.$http.post('/ShopOrderController/updateOrderIsDel', params)
+      params.append('orderId', vm.refIndex)
+      params.append('refundDesc', vm.ref)
+      vm.$http.post('/ShopRefundRecordController/refundRequest', params)
         .then(res => {
           console.log(res)
+          vm.goodsref = ''
           vm.getData()
-          Toast('删除成功')
+          Toast('提交成功')
         })
         .catch(err => {
           console.log(err)
         })
     },
-    // 查看物流
-    goLogs (item) {
+    // 填写物流
+    writeLogs (index) {
       const vm = this
-      const shipper = item.logistics.shipper
-      const code = item.logistics.logisticsCode
-      vm.$router.replace({ path: '/goodsLog', query: { shipper: shipper, code: code } })
+      vm.logDialog = true
+      vm.logIndex = index
+    },
+    logCfm (action, done) {
+      const vm = this
+      if (action === 'confirm') {
+        if (vm.selected === '' || vm.logisticsCode === '') {
+          Toast('请填写完整信息')
+          setTimeout(done, 500)
+        } else {
+          logList.forEach(item => {
+            if (vm.selected === item.value) {
+              vm.logCode = item.code
+              vm.sendLogs()
+              setTimeout(done, 500)
+            }
+          })
+        }
+      } else {
+        vm.selected = ''
+        vm.logisticsCode = ''
+        done()
+      }
+    },
+    sendLogs () {
+      const vm = this
+      const params = new URLSearchParams()
+      params.append('shopRefundId', vm.logIndex)
+      params.append('logisticsCode', vm.logisticsCode)
+      params.append('shipper', vm.logCode)
+      params.append('shipperName', vm.selected)
+      vm.$http.post('/LogisticsController/RefundLogistics', params)
+        .then(res => {
+          console.log(res)
+          vm.selected = ''
+          vm.logisticsCode = ''
+          Toast('提交成功')
+          vm.getData()
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
-    // 填写物流信息
-    // writeLogs (index) {
-    //   const vm = this
-    //   vm.logDialog = true
-    //   vm.logIndex = index
-    // },
-    // logCfm (action, done) {
-    //   const vm = this
-    //   if (action === 'confirm') {
-    //     if (vm.logName === '' || vm.logisticsCode === '') {
-    //       Toast('请填写完整信息')
-    //       setTimeout(done, 500)
-    //     } else {
-    //       logList.forEach(item => {
-    //         if (vm.logName === item.value) {
-    //           vm.logCode = item.code
-    //           vm.sendLogs()
-    //           setTimeout(done, 500)
-    //         } else if (vm.logName !== item.value) {
-    //           vm.logName = ''
-    //           vm.logisticsCode = ''
-    //           Toast('物流公司填写错误')
-    //           setTimeout(done, 500)
-    //         }
-    //       })
-    //     }
-    //   } else {
-    //     vm.logName = ''
-    //     vm.logisticsCode = ''
-    //     done()
-    //   }
-    // },
-    // sendLogs () {
-    //   const vm = this
-    //   const params = new URLSearchParams()
-    //   params.append('shopRefundId', vm.logIndex)
-    //   params.append('logisticsCode', vm.logisticsCode)
-    //   params.append('shipper', vm.logCode)
-    //   params.append('shipperName', vm.logName)
-    //   vm.$http.post('/LogisticsController/RefundLogistics', params)
-    //     .then(res => {
-    //       console.log(res)
-    //       vm.logName = ''
-    //       vm.logisticsCode = ''
-    //       Toast('提交成功')
-    //       vm.getData()
-    //     })
-    //     .catch(err => {
-    //       console.log(err)
-    //     })
-    // },
   }
 }
 </script>
@@ -271,7 +278,7 @@ export default {
 <style lang="stylus" scoped>
 @import '~@/assets/styles/common.styl'
 
-.all-box
+.after-sale
     height 74.5vh
     background #f5f5f5
     position relative
@@ -280,17 +287,6 @@ export default {
     right 0
     top 0
     bottom 0
-    .logDialog
-        padding .2rem
-        text-align center
-        div
-            margin-top .3rem
-            span
-                font-size 13px
-            input
-                margin-left .2rem
-                padding-left .1rem
-                border 1px solid #eee
     .refDialog
         padding .2rem
         text-align center
@@ -300,6 +296,25 @@ export default {
             padding-left .1rem
             border 1px solid #eeeeee
             resize none
+    .logDialog
+        padding .2rem
+        text-align center
+        div
+            display flex
+            height .6rem
+            margin-top .3rem
+            span
+                line-height .6rem
+                font-size 13px
+            select
+                margin-left .2rem
+                border 1px solid #eee
+                width 66%
+            input
+                width 64%
+                margin-left .2rem
+                padding-left .1rem
+                border 1px solid #eee
     .noOrder
         margin-top 12vh
         text-align center
@@ -342,8 +357,7 @@ export default {
                     color #aaaaaa
             .number
                 margin-left .2rem
-                margin-top .3rem
-                width 24%
+                margin-top .2rem
                 p:nth-child(1)
                     text-align right
                     font-size 13px

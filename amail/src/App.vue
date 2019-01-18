@@ -6,6 +6,7 @@
     <home-footer></home-footer>
   </div>
 </template>
+
 <script>
 import HomeFooter from './components/Footer.vue'
 export default {
@@ -17,6 +18,8 @@ export default {
   }
 }
 </script>
-<style lang="stylus">
 
+<style lang="stylus">
+#app
+  -webkit-overflow-scrolling: touch
 </style>

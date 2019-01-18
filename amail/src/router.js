@@ -11,19 +11,21 @@ import buyComplete from './views/order/buyComplete.vue'
 
 Vue.use(Router)
 
-export default new Router({
-  // history: false,
+const router = new Router({
+  // mode: 'history',
   routes: [
-    { path: '/', redirect: '/home' },
-    { path: '/home', name: 'home', component: home },
+    { path: '/', redirect: '/shophome' },
+    { path: '/shophome', name: 'home', component: home },
     { path: '/shoppingCart', name: 'shoppingCart', component: shoppingCart },
     { path: '/orderHome', name: 'orderHome', component: orderHome },
     { path: '/search', name: 'search', component: search },
     { path: '/goodsDetail', name: 'goodsDetail', component: goodsDetail },
+    // { path: '/confirmOrder', redirect: '/lvxiaoluo/confirmOrder' },
     { path: '/confirmOrder', name: 'confirmOrder', component: confirmOrder },
     { path: '/goodsLog', name: 'goodsLog', component: goodsLog },
     { path: '/buyComplete', name: 'buyComplete', component: buyComplete }
   ]
 })
 
+export default router
 // component: () => import(/* webpackChunkName: "about" */ './views/About.vue') // 按需加载

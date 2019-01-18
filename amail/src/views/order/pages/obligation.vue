@@ -23,12 +23,18 @@
                     <span>￥{{item.shopOrder.price}}</span>
                 </p>
             </div>
+            <div class="userMsg">
+                <div><span>收货人: </span><span>{{item.shopOrder.userName}}</span></div>
+            </div>
+            <div class="userMsg">
+                <div><span>联系方式: </span><span>{{item.shopOrder.phone}}</span></div>
+            </div>
             <div class="address">
                 <div>地址:</div>
                 <p>{{item.shopOrder.address}}</p>
             </div>
             <div class="footer">
-                <button>立即付款</button>
+                <button @click="toPay(item)">立即付款</button>
                 <button @click="cancel(item.shopOrder.orderId)">取消订单</button>
             </div>
         </div>
@@ -48,6 +54,7 @@
 
 <script>
 import Vue from 'vue'
+import { mapMutations } from 'vuex'
 import { Dialog, Toast } from 'vant'
 Vue.use(Dialog).use(Toast)
 export default {
@@ -62,6 +69,7 @@ export default {
     this.getData()
   },
   methods: {
+    // 获取订单信息
     getData () {
       const vm = this
       const params = new URLSearchParams()
@@ -75,6 +83,7 @@ export default {
           console.log(err)
         })
     },
+    // 取消订单
     cancel (index) {
       const vm = this
       vm.showDialog = true
@@ -88,6 +97,7 @@ export default {
         done()
       }
     },
+    // 取消订单接口
     sendCal () {
       const vm = this
       const params = new URLSearchParams()
@@ -101,6 +111,39 @@ export default {
         .catch(err => {
           console.log(err)
         })
+    },
+    ...mapMutations({
+      setOrder: 'GET_ORDER'
+    }),
+    // 立即支付
+    toPay (item) {
+      const vm = this
+      let list = []
+      //   let shopCars = []
+      let shopCars = item.shopOrder.shopCarIds
+      let thislist = item.shopOrderDetailList
+      for (let i in thislist) {
+        const goodsId = thislist[i].goodsId
+        const goodsName = thislist[i].goodsName
+        const price = thislist[i].unitPrice
+        const property = thislist[i].goodsProperty
+        const goodsAmount = thislist[i].goodsNumber
+        const imgUrl = thislist[i].imgUrl
+        // const shopCarId = thislist[i].shopCarId
+        // const item2 = { shopCarIds }
+        const item = { goodsId, goodsName, price, property, goodsAmount, imgUrl }
+        list.push(item)
+        // shopCars.push(item2)
+      }
+      const status = 2
+      const outTradeNo = item.shopOrder.outTradeNo
+      const totalprice = item.shopOrder.price
+      const userName = item.shopOrder.userName
+      const phone = item.shopOrder.phone
+      const address = item.shopOrder.address
+      const orderDetail = { list, totalprice, status, shopCars, outTradeNo, userName, phone, address }
+      vm.$router.replace({ path: '/confirmOrder' })
+      vm.setOrder(orderDetail)
     }
   }
 }
@@ -110,7 +153,7 @@ export default {
 @import '~@/assets/styles/common.styl'
 
 .obligation-box
-    height 76vh
+    height 74.5vh
     background #f5f5f5
     position relative
     overflow-y auto
@@ -152,7 +195,8 @@ export default {
                 margin-top .2rem
                 margin-left .35rem
                 p:nth-child(1)
-                    font-size 16px
+                    font-size 15px
+                    line-height 20px
                 p:nth-child(2)
                     margin-top .2rem
                     font-size 13px
@@ -161,11 +205,12 @@ export default {
                 margin-left .2rem
                 margin-top .2rem
                 p:nth-child(1)
+                    text-align right
                     font-size 13px
                 p:nth-child(2)
                     font-size 13px
                     color #aaaaaa
-                    float right
+                    text-align right
                     margin-top .1rem
         .total
             margin-top .3rem
@@ -180,6 +225,16 @@ export default {
                     margin-right .2rem
                 span:nth-child(3)
                     font-size 15px
+        .userMsg
+            width 89%
+            margin-left auto
+            margin-right auto
+            height .3rem
+            line-height .3rem
+            margin-bottom .1rem
+            border-left 3px solid $themeColor
+            span:nth-child(1)
+                margin-left .1rem
         .address
             width 90%
             margin-left auto
@@ -189,7 +244,7 @@ export default {
             padding-bottom .3rem
             color #393E46
             div:nth-child(1)
-                border-left 3px solid #eeeeee
+                border-left 3px solid $themeColor
                 width 15%
                 padding-left .1rem
                 height .27rem

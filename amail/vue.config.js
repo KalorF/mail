@@ -1,5 +1,5 @@
 // const path = require('path')
-const VConsolePlugin = require('vconsole-webpack-plugin') // 引入 移动端模拟开发者工具 插件 （另：https://github.com/liriliri/eruda）
+// const VConsolePlugin = require('vconsole-webpack-plugin') // 引入 移动端模拟开发者工具 插件 （另：https://github.com/liriliri/eruda）
 // const CompressionPlugin = require("compression-webpack-plugin"); //Gzip
 // const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
 //   .BundleAnalyzerPlugin; //Webpack包文件分析器
@@ -17,7 +17,7 @@ module.exports = {
   // eslint-loader 是否在保存的时候检查
   lintOnSave: true,
   // 放置生成的静态资源 (js、css、img、fonts) 的 (相对于 outputDir 的) 目录。
-  assetsDir: 'static',
+  assetsDir: 'mailStatic',
   // 以多页模式构建应用程序。
   pages: undefined,
   // 是否使用包含运行时编译器的 Vue 构建版本
@@ -44,30 +44,36 @@ module.exports = {
   configureWebpack: config => {
     // 生产and测试环境
     let pluginsPro = [
-      //   new CompressionPlugin({
-      //     //文件开启Gzip，也可以通过服务端(如：nginx)(https://github.com/webpack-contrib/compression-webpack-plugin)
-      //     filename: "[path].gz[query]",
-      //     algorithm: "gzip",
-      //     test: new RegExp("\\.(" + ["js", "css"].join("|") + ")$"),
-      //     threshold: 8192,
-      //     minRatio: 0.8
-      //   }),
-      //   //Webpack包文件分析器(https://github.com/webpack-contrib/webpack-bundle-analyzer)
-      //   new BundleAnalyzerPlugin()
+      // new CompressionPlugin({
+      //   //文件开启Gzip，也可以通过服务端(如：nginx)(https://github.com/webpack-contrib/compression-webpack-plugin)
+      //   filename: "[path].gz[query]",
+      //   algorithm: "gzip",
+      //   test: new RegExp("\\.(" + ["js", "css"].join("|") + ")$"),
+      //   threshold: 8192,
+      //   minRatio: 0.8
+      // }),
+      // //Webpack包文件分析器(https://github.com/webpack-contrib/webpack-bundle-analyzer)
+      // new BundleAnalyzerPlugin()
+      // new VConsolePlugin({
+      //   filter: [], // 需要过滤的入口文件
+      //   enable: true // 发布代码前记得改回 false
+      // })
     ]
     // 开发环境
     let pluginsDev = [
       // 移动端模拟开发者工具(https://github.com/diamont1001/vconsole-webpack-plugin  https://github.com/Tencent/vConsole)
-      new VConsolePlugin({
-        filter: [], // 需要过滤的入口文件
-        enable: false // 发布代码前记得改回 false
-      })
+      // new VConsolePlugin({
+      //   filter: [], // 需要过滤的入口文件
+      //   enable: true // 发布代码前记得改回 false
+      // })
     ]
     if (process.env.NODE_ENV === 'production') {
       // 为生产环境修改配置...process.env.NODE_ENV !== 'development'
       config.plugins = [...config.plugins, ...pluginsPro]
+      // config.plugins = [...config.plugins]
     } else {
       // 为开发环境修改配置...
+      // config.plugins = [...config.plugins]
       config.plugins = [...config.plugins, ...pluginsDev]
     }
   },

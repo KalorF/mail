@@ -23,18 +23,24 @@
                     <span>￥{{item.shopOrder.price}}</span>
                 </p>
             </div>
+            <div class="userMsg">
+                <div><span>收货人: </span><span>{{item.shopOrder.userName}}</span></div>
+            </div>
+            <div class="userMsg">
+                <div><span>联系方式: </span><span>{{item.shopOrder.phone}}</span></div>
+            </div>
             <div class="address">
                 <div>地址:</div>
                 <p>{{item.shopOrder.address}}</p>
             </div>
-            <div class="footer" v-if="item.shopOrder.shopStatus === 0 || item.shopOrder.shopStatus === 7">
+            <div class="footer">
                 <!-- <button>提醒发货</button> -->
                 <button @click="refund(item.shopOrder.orderId)">申请退款</button>
             </div>
-            <div class="footer" v-else>
+            <!-- <div class="footer" v-else>
                 <div class="wait" v-if="item.shopOrder.shopStatus === 5">等待商家确认退款</div>
                 <div class="wait" v-if="item.shopOrder.shopStatus === 6 || item.shopOrder.shopStatus === 8">退款成功</div>
-            </div>
+            </div> -->
         </div>
         <van-dialog
           v-model="showDialog"
@@ -67,6 +73,7 @@ export default {
     this.getData()
   },
   methods: {
+    // 获取订单信息
     getData () {
       const vm = this
       const params = new URLSearchParams()
@@ -80,6 +87,7 @@ export default {
           console.log(err)
         })
     },
+    // 退货申请
     refund (index) {
       const vm = this
       vm.showDialog = true
@@ -103,10 +111,9 @@ export default {
     reqRef () {
       const vm = this
       const params = new URLSearchParams()
-      //   params.append('openid', 1)
       params.append('orderId', vm.refIndex)
       params.append('refundDesc', vm.ref)
-      vm.$http.post('/ShopRefundRecordController/refundRequest2', params)
+      vm.$http.post('/ShopRefundRecordController/refundRequest', params)
         .then(res => {
           console.log(res)
           vm.ref = ''
@@ -125,7 +132,7 @@ export default {
 @import '~@/assets/styles/common.styl'
 
 .wait-send
-    height 76vh
+    height 74.5vh
     background #f5f5f5
     position relative
     overflow-y auto
@@ -176,7 +183,8 @@ export default {
                 margin-top .2rem
                 margin-left .35rem
                 p:nth-child(1)
-                    font-size 16px
+                    font-size 15px
+                    line-height 20px
                 p:nth-child(2)
                     margin-top .2rem
                     font-size 13px
@@ -185,11 +193,12 @@ export default {
                 margin-left .2rem
                 margin-top .2rem
                 p:nth-child(1)
+                    text-align right
                     font-size 13px
                 p:nth-child(2)
                     font-size 13px
                     color #aaaaaa
-                    float right
+                    text-align right
                     margin-top .1rem
         .total
             margin-top .3rem
@@ -204,6 +213,16 @@ export default {
                     margin-right .2rem
                 span:nth-child(3)
                     font-size 15px
+        .userMsg
+            width 89%
+            margin-left auto
+            margin-right auto
+            height .3rem
+            line-height .3rem
+            margin-bottom .1rem
+            border-left 3px solid $themeColor
+            span:nth-child(1)
+                margin-left .1rem
         .address
             width 90%
             margin-left auto
@@ -213,7 +232,7 @@ export default {
             padding-bottom .3rem
             color #393E46
             div:nth-child(1)
-                border-left 3px solid #eeeeee
+                border-left 3px solid $themeColor
                 width 15%
                 padding-left .1rem
                 height .27rem

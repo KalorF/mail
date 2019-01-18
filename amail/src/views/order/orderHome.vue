@@ -1,41 +1,52 @@
 <template>
     <div class="order-box">
         <div class="order-head">我的订单</div>
-        <van-tabs v-model="active" @change="change" color='#31C27C' :line-width='22' swipeable animated class="thisTab">
+        <van-tabs v-model="activeTab" @change="change" color='#31C27C' :line-width='22' swipeable animated class="thisTab">
             <van-tab :title="'已完成'"><allOrder></allOrder></van-tab>
             <van-tab :title="'待付款'"><obligation></obligation></van-tab>
             <van-tab :title="'待发货'"><waitSend></waitSend></van-tab>
             <van-tab :title="'待收货'"><waitTake></waitTake></van-tab>
+            <van-tab :title="'售后服务'"><afterSaleService></afterSaleService></van-tab>
         </van-tabs>
     </div>
 </template>
 
 <script>
 import Vue from 'vue'
+import { mapGetters, mapMutations } from 'vuex'
 import { Tab, Tabs } from 'vant'
 import allOrder from './pages/allOrder.vue'
 import obligation from './pages/obligation.vue'
 import waitSend from './pages/waitSend.vue'
 import waitTake from './pages/waitTake.vue'
+import afterSaleService from './pages/afterSaleService.vue'
 Vue.use(Tab).use(Tabs)
 export default {
   components: {
     allOrder,
     obligation,
     waitSend,
-    waitTake
+    waitTake,
+    afterSaleService
   },
   beforeRouteLeave (to, from, next) {
     this.$destroy()
     next()
   },
+  computed: {
+    ...mapGetters(['activeTab'])
+  },
   data () {
     return {
-      active: 0
     }
   },
   methods: {
-    change () {
+    ...mapMutations({
+      setActive: 'ACTIVE_TAB'
+    }),
+    change (e) {
+      const vm = this
+      vm.setActive(e)
     }
   }
 }

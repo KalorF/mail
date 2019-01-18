@@ -2,10 +2,10 @@
     <transition name="slide">
         <div class="search-box">
             <div class="head">
-                <i class="iconfont back" @click="$router.replace({path: '/home'})">&#xe600;</i>
+                <i class="iconfont back" @click="$router.replace({path: '/shophome'})">&#xe600;</i>
                 <div class="thisInput">
                     <input type="search" v-focus='true' v-model="searchValue" @keyup="searchGoods" placeholder="请输入要搜索的商品">
-                    <button v-if="searchValue" @click="$router.replace({path: '/home'})">取消</button>
+                    <button v-if="searchValue" @click="$router.replace({path: '/shophome'})">取消</button>
                 </div>
             </div>
             <div class="search-history">
@@ -66,6 +66,7 @@ export default {
       const vm = this
       vm.getResult()
     },
+    // 获取搜索结果
     getResult () {
       const vm = this
       const params = new URLSearchParams()
@@ -79,6 +80,7 @@ export default {
           console.log(err)
         })
     },
+    // 选择搜索结果并且存入localStorage
     selgoods (item) {
       const vm = this
       const value = item.goodsName
@@ -99,6 +101,7 @@ export default {
         vm.setList(item)
       }
     },
+    // 获取localStorage
     getHistory () {
       const vm = this
       let list = localStorage.getItem('history')
@@ -108,6 +111,7 @@ export default {
         vm.list = JSON.parse(list)
       }
     },
+    // 清空localStorage
     empty () {
       const vm = this
       localStorage.setItem('history', '')
@@ -192,9 +196,10 @@ export default {
                 height .2rem
                 line-height .2rem
                 text-align center
-                color #333333
+                background-color #f5f5f5
+                color #6d6d6d
                 border-radius 15px
-                border 1px solid #a39e9e
+                border 1px solid #f5f5f5
     .search-result
         position absolute
         top 1rem

@@ -1,6 +1,9 @@
 const state = {
   detail: {},
-  orderList: {}
+  orderList: {},
+  userInfo: {},
+  activeTab: 2,
+  moreSelect: false
 }
 
 export default state

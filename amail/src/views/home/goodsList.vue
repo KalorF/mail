@@ -48,6 +48,7 @@ export default {
     ...mapMutations({
       setList: 'GET_DETAIL'
     }),
+    // 获取商品信息
     getGoodsList () {
       const vm = this
       let page = vm.page
@@ -71,6 +72,7 @@ export default {
       vm.$router.replace({ path: '/goodsDetail' })
       vm.setList(item)
     },
+    // 监听滚动事件
     listScroll () {
       const vm = this
       let scrollTop = this.$refs.listcontent.scrollTop
@@ -91,9 +93,17 @@ export default {
         vm.toTop = false
       }
     },
+    // 缓慢回到顶部
     top () {
       const vm = this
-      vm.$refs.listcontent.scrollTop = 0
+      let timer = setInterval(() => {
+        let scrollTop = vm.$refs.listcontent.scrollTop
+        let ispeed = Math.floor(-scrollTop / 6)
+        if (vm.$refs.listcontent.scrollTop === 0) {
+          clearInterval(timer)
+        }
+        vm.$refs.listcontent.scrollTop = scrollTop + ispeed
+      }, 30)
     }
   }
 }
@@ -136,6 +146,7 @@ export default {
             margin-top .1rem
             display flex
             flex-wrap wrap
+            margin-bottom .2rem
             .item
                 width 50%
                 // height 5.1rem

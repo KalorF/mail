@@ -24,10 +24,11 @@
                     <div class="adInput">
                         <input type="tel" v-model="phone" placeholder="手机号码" maxlength="11">
                     </div>
-                    <div class="adInput">
+                    <div v-if="orderList.status !== 2" class="adInput">
                         <input v-model="area" @click="selArea" type="text" readonly placeholder="所在地区">
                     </div>
-                    <textarea v-model="adr" class="textarea" placeholder="详细地址: 如道路、门牌号、小区、楼栋号、单元室等" rows="3"></textarea>
+                    <textarea v-if="orderList.status !== 2" v-model="adr" class="textarea" placeholder="详细地址: 如道路、门牌号、小区、楼栋号、单元室等" rows="3"></textarea>
+                    <textarea v-if="orderList.status === 2" v-model="address" class="textarea" placeholder="详细地址: 如道路、门牌号、小区、楼栋号、单元室等" rows="3"></textarea>
                 </div>
                 <div class="remark">备注</div>
                 <div class="remark-box">
@@ -46,8 +47,8 @@
 
 <script>
 import Vue from 'vue'
-import wx from 'weixin-jsapi'
-import { mapGetters } from 'vuex'
+// import wx from 'weixin-jsapi'
+import { mapGetters, mapMutations } from 'vuex'
 import { Popup, Area, Toast } from 'vant'
 import areaList from '@/areaList.js'
 import Transition from '@/components/transition.vue'
@@ -76,15 +77,30 @@ export default {
       phone: '',
       area: '',
       adr: '',
+      address: '',
       remark: '',
       path: '',
       outTradeNo: ''
     }
   },
+  mounted () {
+    this.getUserInfo()
+  },
   computed: {
     ...mapGetters(['orderList'])
   },
   methods: {
+    getUserInfo () {
+      const vm = this
+      if (vm.orderList.status === 2) {
+        vm.userName = vm.orderList.userName
+        vm.phone = vm.orderList.phone
+        vm.address = vm.orderList.address
+      }
+    },
+    ...mapMutations({
+      userInfo: 'SET_USERINFO'
+    }),
     back () {
       const vm = this
       vm.$router.replace({ path: frompath })
@@ -103,11 +119,19 @@ export default {
       vm.area = area
       vm.show = false
     },
+    // 确认支付
     toPay () {
       const vm = this
       let orderDetail = ''
       const thisList = vm.orderList.list
-      const address = vm.area + vm.adr
+      let address = ''
+      if (vm.orderList.status === 2) {
+        address = vm.address
+        vm.area = 1
+        vm.adr = 1
+      } else {
+        address = vm.area + vm.adr
+      }
       for (let i in thisList) {
         const Detail = thisList[i].goodsId +
         '*' + thisList[i].property +
@@ -125,12 +149,13 @@ export default {
         params.append('orderDetail', orderDetail.substring(0, orderDetail.length - 1))
         params.append('price', vm.orderList.totalprice)
         params.append('orderNote', vm.remark)
+        params.append('shopCarId', JSON.stringify(vm.orderList.shopCars))
         params.append('address', address)
         params.append('phone', vm.phone)
         vm.$http.post('/ShopOrderController/placeOrder', params)
           .then(res => {
             console.log(res)
-            vm.outTradeNo = res.data.outTradeNo
+            vm.outTradeNo = res.data.OutTradeNo
             vm.weixinPay()
           })
           .catch(err => {
@@ -138,76 +163,95 @@ export default {
           })
       }
     },
+    // 微信支付
     weixinPay () {
       const vm = this
-      const address = vm.area + vm.adr
+      const userName = vm.userName
+      const phone = vm.phone
+      let address = ''
+      if (vm.orderList.status === 2) {
+        address = vm.address
+      } else {
+        address = vm.area + vm.adr
+      }
       const params = new URLSearchParams()
-      params.append('outTradeNo', vm.outTradeNo)
+      console.log(vm.orderList.shopCars)
+      if (vm.orderList.status === 2) {
+        params.append('outTradeNo', vm.orderList.outTradeNo)
+      } else {
+        params.append('outTradeNo', vm.outTradeNo)
+      }
       params.append('price', vm.orderList.totalprice)
       params.append('status', vm.orderList.status)
-      params.append('shopCars', vm.orderList.shopCars)
+      if (vm.orderList.status === 1 || vm.orderList.status === 2) {
+        params.append('shopCarIds', JSON.stringify(vm.orderList.shopCars))
+      } else if (vm.orderList.status === 0) {
+        params.append('shopCarIds', vm.orderList.shopCars)
+        params.append('goodsId', vm.orderList.goodsId)
+      }
       vm.$http.post('/WXPay/weixinPayForShopGoods', params)
         .then(res => {
-          let outTradeNo = res.data.outTradeNo
-          let status = res.data.status
-          let shopCars = res.data.shopCars
-          wx.ready(function () {
-            wx.chooseWXPay({
-              appId: res.data.data.appId, // 公众号名称，由商户传入
-              timeStamp: res.data.data.timeStamp, // 时间戳，自1970年以来的秒数
-              nonceStr: res.data.data.nonceStr, // 随机串
-              package: res.data.data.package,
-              signType: res.data.data.signType, // 微信签名方式：
-              paySign: res.data.data.paySign, // 微信签名
-              success: function (respon) {
+          console.log(res)
+          var outTradeNo = res.data.data.outTradeNo
+          var status = res.data.data.status
+          var shopData = ''
+          if (status === 0) {
+            shopData = vm.orderList.goodsId
+          } else {
+            shopData = res.data.data.shopCarIds
+          }
+          window.WeixinJSBridge.invoke(
+            'getBrandWCPayRequest', {
+              appId: res.data.data.responseMap.appId, // 公众号名称，由商户传入
+              timeStamp: res.data.data.responseMap.timeStamp, // 时间戳，自1970年以来的秒数
+              nonceStr: res.data.data.responseMap.nonceStr, // 随机串
+              package: res.data.data.responseMap.package,
+              signType: res.data.data.responseMap.signType, // 微信签名方式：
+              paySign: res.data.data.responseMap.paySign // 微信签名
+            },
+            function (respon) {
+              console.log(respon)
+              if (respon.err_msg === 'get_brand_wcpay_request:ok') {
                 const sucs = new URLSearchParams()
                 sucs.append('outTradeNo', outTradeNo)
                 sucs.append('status', status)
-                sucs.append('shopCars', shopCars)
+                if (status === 0) {
+                  sucs.append('goodsId', shopData)
+                } else {
+                  sucs.append('shopCarIds', shopData)
+                }
+                console.log(shopData)
                 sucs.append('payStatus', 1)
                 vm.$http.post('/WXPay/weixinResultShopOrder', sucs)
-                  .then(res => {
-                    let timer = setTimeout(() => {
-                      clearTimeout(timer)
-                      vm.$router.replace({ path: '/buyComplete', query: { address: address, userName: vm.userName, phone: vm.phone } })
-                    }, 500)
-                  })
                   .catch(err => {
                     console.log(err)
                   })
-              },
-              cancel: function (respon) {
-                const canl = new URLSearchParams()
-                canl.append('outTradeNo', outTradeNo)
-                canl.append('status', status)
-                canl.append('shopCars', shopCars)
-                canl.append('payStatus', 0)
-                vm.$http.post('/WXPay/weixinResultShopOrder', canl)
-                  .then(res => {
-                    console.log(res)
-                    Toast('支付已经取消')
-                  })
-                  .catch(err => {
-                    console.log(err)
-                  })
-              },
-              fail: function (respon) {
+                let timer = setTimeout(() => {
+                  clearTimeout(timer)
+                  const info = { address, userName, phone }
+                  vm.userInfo(info)
+                  vm.$router.replace({ path: '/buyComplete' })
+                }, 400)
+              } else {
                 const fail = new URLSearchParams()
                 fail.append('outTradeNo', outTradeNo)
                 fail.append('status', status)
-                fail.append('shopCars', shopCars)
+                if (status === 0) {
+                  fail.append('goodsId', shopData)
+                } else {
+                  fail.append('shopCarIds', shopData)
+                }
+                console.log(shopData)
                 fail.append('payStatus', 0)
                 vm.$http.post('/WXPay/weixinResultShopOrder', fail)
-                  .then(res => {
-                    console.log(res)
-                    Toast('支付失败')
-                  })
                   .catch(err => {
                     console.log(err)
                   })
+                console.log(res)
+                Toast('支付失败')
               }
-            })
-          })
+            }
+          )
         })
         .catch(err => {
           console.log(err)

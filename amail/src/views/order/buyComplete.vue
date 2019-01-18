@@ -14,8 +14,8 @@
           <i class="iconfont">&#xe605;</i>
         </div>
         <div class="customer">
-          <p>收货人：{{$route.query.userName}}<span>{{$route.query.phone}}</span></p>
-          <p>收货地址：{{$route.query.address}}</p>
+          <p>收货人：{{userInfo.userName}}<span>{{userInfo.phone}}</span></p>
+          <p>收货地址：{{userInfo.address}}</p>
         </div>
       </div>
       <!-- <div class="shop">
@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex'
+import { mapMutations, mapGetters } from 'vuex'
 import Transition from '@/components/transition.vue'
 export default {
   components: {
@@ -85,6 +85,12 @@ export default {
       shopsrc: ''
     }
   },
+  mounted () {
+    this.getData()
+  },
+  computed: {
+    ...mapGetters(['userInfo'])
+  },
   methods: {
     ...mapMutations({
       setList: 'GET_DETAIL'
@@ -93,25 +99,21 @@ export default {
       const vm = this
       vm.$router.replace({ path: '/goodsDetail' })
       vm.setList(item)
+    },
+    getData () {
+      const vm = this
+      const parmas = new URLSearchParams()
+      parmas.append('publicityStatus', 1) // 尚未填写publicityStatus
+      // shopGoods(parmas)
+      vm.$http.post('/ShopGoodsController/selectPublicityGoods', parmas)
+        .then(res => {
+          console.log(res)
+          vm.product = res.data
+        })
+        .catch(err => {
+          console.log(err)
+        })
     }
-  },
-  activated () {
-    const vm = this
-    const parmas = new URLSearchParams()
-    parmas.append('publicityStatus', 'publicityStatus') // 尚未填写publicityStatus
-    // shopGoods(parmas)
-    vm.$http({
-      methods: 'post',
-      data: parmas,
-      url: '/ShopGoodsController/selectPublicityGoods'
-    })
-      .then(res => {
-        console.log(res)
-        vm.product = res.data
-      })
-      .catch(err => {
-        console.log(err)
-      })
   }
 }
 </script>
@@ -150,6 +152,7 @@ export default {
 .content {
   position absolute
   overflow-y auto
+  width 100%
   height 92vh
 }
 .successimg {
@@ -161,9 +164,11 @@ export default {
   background $cartColor
 }
 .customer-box {
-  margin-top .15rem
+  margin-top .12rem
   display flex
   background #ffffff
+  justify-content center
+  align-items center
   padding .15rem
   .img {
     width 14%
@@ -278,7 +283,7 @@ export default {
   display: flex;
   justify-content: flex-start;
   background #ffffff
-  margin-top .15rem
+  margin-top .12rem
   .hr1 {
     width: 30%;
     margin: 4% 2%;

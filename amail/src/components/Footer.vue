@@ -1,8 +1,8 @@
 <template>
     <div class="foot-tab">
-        <router-link tag="div" class="tab-item" :to="{path: '/home'}" replace>
+        <router-link tag="div" class="tab-item" :to="{path: '/shophome'}" replace>
             <span class="tab-link">
-                <i v-if="'/home' === $route.path" class="iconfont">&#xe659;</i>
+                <i v-if="'/shophome' === $route.path" class="iconfont">&#xe659;</i>
                 <i v-else class="iconfont">&#xe602;</i>
                 <p>首页</p>
             </span>
@@ -33,25 +33,29 @@ export default {
 @import '~@/assets/styles/common.styl'
 .foot-tab
   position fixed
-  height 9vh
+  height 9.2vh
   width 100%
   display flex
   bottom 0
   border-top 1px solid #eeeeee
-  background-color #FCFCFC
+  justify-content center
+  align-items center
+  background-color #fdfdfd
 //   z-index 12
   .tab-item
       flex: 1
       text-align: center
-      margin-top .15rem
+    //   margin-top .15rem
       .tab-link
-        padding-bottom: 5px
+        // padding-bottom: 2px
         color: #2d2d2d
         i
           font-size 24px
         p
           font-size 12px
-          margin-top .13rem
+          margin-top .11rem
+        // .active
+        //   font-size 25px
       &.router-link-active
         .tab-link
           color: $themeColor
