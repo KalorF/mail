@@ -48,6 +48,7 @@
 <script>
 import Vue from 'vue'
 // import wx from 'weixin-jsapi'
+import api from '@/serverAPI.js'
 import { mapGetters, mapMutations } from 'vuex'
 import { Popup, Area, Toast } from 'vant'
 import areaList from '@/areaList.js'
@@ -138,7 +139,8 @@ export default {
         '*' + thisList[i].goodsAmount +
         '*' + thisList[i].goodsName +
         '*' + thisList[i].price +
-        '*' + thisList[i].imgUrl
+        '*' + thisList[i].imgUrl +
+        '*' + thisList[i].cost
         orderDetail += Detail + ','
       }
       if (vm.userName === '' || vm.area === '' || vm.adr === '' || vm.phone === '') {
@@ -152,7 +154,7 @@ export default {
         params.append('shopCarId', JSON.stringify(vm.orderList.shopCars))
         params.append('address', address)
         params.append('phone', vm.phone)
-        vm.$http.post('/ShopOrderController/placeOrder', params)
+        vm.$http.post(api.placeOrder, params)
           .then(res => {
             console.log(res)
             vm.outTradeNo = res.data.OutTradeNo
@@ -183,17 +185,23 @@ export default {
       }
       params.append('price', vm.orderList.totalprice)
       params.append('status', vm.orderList.status)
+      params.append('prices', JSON.stringify(vm.orderList.prices))
+      params.append('costs', JSON.stringify(vm.orderList.costs))
+      params.append('amounts', JSON.stringify(vm.orderList.amounts))
       if (vm.orderList.status === 1 || vm.orderList.status === 2) {
         params.append('shopCarIds', JSON.stringify(vm.orderList.shopCars))
       } else if (vm.orderList.status === 0) {
         params.append('shopCarIds', vm.orderList.shopCars)
         params.append('goodsId', vm.orderList.goodsId)
       }
-      vm.$http.post('/WXPay/weixinPayForShopGoods', params)
+      vm.$http.post(api.weixinPayForShopGoods, params)
         .then(res => {
           console.log(res)
           var outTradeNo = res.data.data.outTradeNo
           var status = res.data.data.status
+          var prices = res.data.data.prices
+          var costs = res.data.data.costs
+          var amounts = res.data.data.amounts
           var shopData = ''
           if (status === 0) {
             shopData = vm.orderList.goodsId
@@ -215,6 +223,9 @@ export default {
                 const sucs = new URLSearchParams()
                 sucs.append('outTradeNo', outTradeNo)
                 sucs.append('status', status)
+                sucs.append('prices', prices)
+                sucs.append('costs', costs)
+                sucs.append('amounts', amounts)
                 if (status === 0) {
                   sucs.append('goodsId', shopData)
                 } else {
@@ -222,7 +233,7 @@ export default {
                 }
                 console.log(shopData)
                 sucs.append('payStatus', 1)
-                vm.$http.post('/WXPay/weixinResultShopOrder', sucs)
+                vm.$http.post(api.weixinResultShopOrder, sucs)
                   .catch(err => {
                     console.log(err)
                   })
@@ -236,6 +247,9 @@ export default {
                 const fail = new URLSearchParams()
                 fail.append('outTradeNo', outTradeNo)
                 fail.append('status', status)
+                fail.append('prices', prices)
+                fail.append('costs', costs)
+                fail.append('amounts', amounts)
                 if (status === 0) {
                   fail.append('goodsId', shopData)
                 } else {
@@ -243,7 +257,7 @@ export default {
                 }
                 console.log(shopData)
                 fail.append('payStatus', 0)
-                vm.$http.post('/WXPay/weixinResultShopOrder', fail)
+                vm.$http.post(api.weixinResultShopOrder, fail)
                   .catch(err => {
                     console.log(err)
                   })

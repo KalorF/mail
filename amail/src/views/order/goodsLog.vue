@@ -25,6 +25,7 @@
 
 <script>
 import Vue from 'vue'
+import api from '@/serverAPI.js'
 import { Step, Steps } from 'vant'
 import Transition from '@/components/transition.vue'
 
@@ -57,7 +58,7 @@ export default {
       const params = new URLSearchParams()
       params.append('type', shipper)
       params.append('no', code)
-      vm.$http.post('/getKdMessage', params)
+      vm.$http.post(api.getKdMessage, params)
         .then(res => {
           const data = res.data.data.KdMessage.result
           vm.expName = data.expName

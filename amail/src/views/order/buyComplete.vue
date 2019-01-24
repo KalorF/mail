@@ -66,6 +66,7 @@
 
 <script>
 import { mapMutations, mapGetters } from 'vuex'
+import api from '@/serverAPI.js'
 import Transition from '@/components/transition.vue'
 export default {
   components: {
@@ -105,7 +106,7 @@ export default {
       const parmas = new URLSearchParams()
       parmas.append('publicityStatus', 1) // 尚未填写publicityStatus
       // shopGoods(parmas)
-      vm.$http.post('/ShopGoodsController/selectPublicityGoods', parmas)
+      vm.$http.post(api.selectPublicityGoods, parmas)
         .then(res => {
           console.log(res)
           vm.product = res.data

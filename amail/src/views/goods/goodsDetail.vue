@@ -72,6 +72,7 @@
 
 <script>
 import Vue from 'vue'
+import api from '@/serverAPI.js'
 import { Swipe, SwipeItem, Stepper, Toast } from 'vant'
 import { mapGetters, mapMutations } from 'vuex'
 
@@ -98,6 +99,7 @@ export default {
       number: 1,
       price: '',
       stock: 0,
+      cost: 0,
       maxNumber: '10',
       property: '',
       totalPrice: 0,
@@ -158,6 +160,7 @@ export default {
         vm.stock = vm.detail.goodsDetail[index].stock
         vm.maxNumber = vm.detail.goodsDetail[index].stock
         vm.property = vm.detail.goodsDetail[index].property
+        vm.cost = vm.detail.goodsDetail[index].cost
         vm.selName = sel[index].innerHTML
       }
     //   for (let i in sel) {
@@ -201,7 +204,7 @@ export default {
         params.append('goodsId', vm.detail.goodsId)
         params.append('property', vm.property)
         params.append('price', vm.price)
-        vm.$http.post('/ShopCarController/shopCarUpdateGoods', params)
+        vm.$http.post(api.addShopCar, params)
           .then(res => {
             Toast('已加入购物车')
           })
@@ -217,6 +220,9 @@ export default {
     toPay () {
       const vm = this
       let list = []
+      let prices = []
+      let costs = []
+      let amounts = []
       if (vm.spec === '选择规格') {
         Toast('请选择规格')
       } else {
@@ -224,14 +230,18 @@ export default {
         const goodsName = vm.detail.goodsName
         const price = vm.price
         const property = vm.selName
+        const cost = vm.cost
         const goodsAmount = vm.number
         const imgUrl = vm.detail.shopImgs[0].imgUrl
-        const item = { goodsId, goodsName, price, property, goodsAmount, imgUrl }
+        const item = { goodsId, goodsName, price, cost, property, goodsAmount, imgUrl }
         list.push(item)
+        prices.push(price)
+        costs.push(cost)
+        amounts.push(goodsAmount)
         const status = 0
         const shopCars = -1
         const totalprice = vm.totalPrice
-        const orderDetail = { list, totalprice, status, goodsId, shopCars }
+        const orderDetail = { list, totalprice, status, goodsId, shopCars, prices, costs, amounts }
         vm.$router.replace({ path: '/confirmOrder' })
         vm.setOrder(orderDetail)
       }

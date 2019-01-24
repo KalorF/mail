@@ -6,7 +6,7 @@
         </div>
         <div class="all-item" v-for="(item,index) in list" :key="index">
             <div v-for="(goods, index) in item.shopOrderDetailList" :key="index" class="one-item">
-                <img :src="goods.imgUrl">
+                <img :src="goods.imgUrl" >
                 <div class="title-text">
                     <p>{{goods.goodsName}}</p>
                     <p>规格：{{goods.goodsProperty}}</p>
@@ -103,6 +103,7 @@
 
 <script>
 import Vue from 'vue'
+import api from '@/serverAPI.js'
 import { Dialog, Toast } from 'vant'
 // import { logList } from '@/LogisticalCompany.js'
 Vue.use(Dialog).use(Toast)
@@ -131,7 +132,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('shopStatus', 2)
-      vm.$http.post('/ShopOrderController/customerShopOrder', params)
+      vm.$http.post(api.customerShopOrder, params)
         .then(res => {
           console.log(res)
           vm.list = res.data
@@ -164,10 +165,9 @@ export default {
     reqRef () {
       const vm = this
       const params = new URLSearchParams()
-      //   params.append('openid', 1)
       params.append('orderId', vm.sedIdex)
       params.append('refundDesc', vm.ref)
-      vm.$http.post('/ShopRefundRecordController/refundRequest', params)
+      vm.$http.post(api.refundRequest, params)
         .then(res => {
           console.log(res)
           vm.ref = ''
@@ -196,7 +196,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('orderId', vm.delIndex)
-      vm.$http.post('/ShopOrderController/updateOrderIsDel', params)
+      vm.$http.post(api.updateOrderIsDel, params)
         .then(res => {
           console.log(res)
           vm.getData()
@@ -213,57 +213,6 @@ export default {
       const code = item.logistics.logisticsCode
       vm.$router.replace({ path: '/goodsLog', query: { shipper: shipper, code: code } })
     }
-    // 填写物流信息
-    // writeLogs (index) {
-    //   const vm = this
-    //   vm.logDialog = true
-    //   vm.logIndex = index
-    // },
-    // logCfm (action, done) {
-    //   const vm = this
-    //   if (action === 'confirm') {
-    //     if (vm.logName === '' || vm.logisticsCode === '') {
-    //       Toast('请填写完整信息')
-    //       setTimeout(done, 500)
-    //     } else {
-    //       logList.forEach(item => {
-    //         if (vm.logName === item.value) {
-    //           vm.logCode = item.code
-    //           vm.sendLogs()
-    //           setTimeout(done, 500)
-    //         } else if (vm.logName !== item.value) {
-    //           vm.logName = ''
-    //           vm.logisticsCode = ''
-    //           Toast('物流公司填写错误')
-    //           setTimeout(done, 500)
-    //         }
-    //       })
-    //     }
-    //   } else {
-    //     vm.logName = ''
-    //     vm.logisticsCode = ''
-    //     done()
-    //   }
-    // },
-    // sendLogs () {
-    //   const vm = this
-    //   const params = new URLSearchParams()
-    //   params.append('shopRefundId', vm.logIndex)
-    //   params.append('logisticsCode', vm.logisticsCode)
-    //   params.append('shipper', vm.logCode)
-    //   params.append('shipperName', vm.logName)
-    //   vm.$http.post('/LogisticsController/RefundLogistics', params)
-    //     .then(res => {
-    //       console.log(res)
-    //       vm.logName = ''
-    //       vm.logisticsCode = ''
-    //       Toast('提交成功')
-    //       vm.getData()
-    //     })
-    //     .catch(err => {
-    //       console.log(err)
-    //     })
-    // },
   }
 }
 </script>
@@ -373,6 +322,8 @@ export default {
             line-height .3rem
             margin-bottom .1rem
             border-left 3px solid $themeColor
+            color #626262
+            font-size 13px
             span:nth-child(1)
                 margin-left .1rem
         .address
@@ -380,16 +331,16 @@ export default {
             margin-left auto
             margin-right auto
             display flex
-            height .5rem
-            padding-bottom .3rem
-            color #393E46
+            padding-bottom .25rem
+            color #626262
+            font-size 13px
             div:nth-child(1)
                 border-left 3px solid $themeColor
                 width 15%
                 padding-left .1rem
                 height .27rem
             p
-                line-height 15px
+                line-height 16px
         .footer
             width 90%
             height .6rem

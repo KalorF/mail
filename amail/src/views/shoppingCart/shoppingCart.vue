@@ -73,6 +73,7 @@
 <script>
 import Vue from 'vue'
 import { mapMutations } from 'vuex'
+import api from '@/serverAPI.js'
 import { Checkbox, Stepper, Dialog, Toast } from 'vant'
 Vue.use(Checkbox)
 Vue.use(Stepper)
@@ -135,7 +136,7 @@ export default {
     // 获取购物车信息
     getData () {
       const vm = this
-      vm.$http.post('/ShopCarController/showGoodsInShopCar')
+      vm.$http.post(api.showGoodsInShopCar)
         .then(res => {
           vm.list = res.data.data.shopCars
           vm.list.map(item => {
@@ -143,6 +144,7 @@ export default {
             item.shopGoodsGetJson.goodsDetail.map(value => {
               if (item.property === value.property) {
                 vm.$set(item, 'maxNumber', value.stock)
+                vm.$set(item, 'cost', value.cost)
               }
             })
           })
@@ -189,7 +191,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('shopCarId', vm.delIndex)
-      vm.$http.post('/ShopCarController/shopCarDelGoods', params)
+      vm.$http.post(api.shopCarDelGoods, params)
         .then(res => {
           Toast('已移除')
           vm.getData()
@@ -206,24 +208,31 @@ export default {
       const vm = this
       let list = []
       let shopCars = []
+      let prices = []
+      let costs = []
+      let amounts = []
       for (let i in vm.list) {
         if (vm.list[i].checked === true) {
           const goodsId = vm.list[i].goodsId
           const goodsName = vm.list[i].shopGoodsGetJson.goodsName
           const price = vm.list[i].price
+          const cost = vm.list[i].cost
           const property = vm.list[i].property
           const goodsAmount = vm.list[i].goodsAmount
           const imgUrl = vm.list[i].shopGoodsGetJson.shopImgs[0].imgUrl
           const shopCarId = vm.list[i].shopCarId
           // const item2 = { shopCarId }
-          const item = { goodsId, goodsName, price, property, goodsAmount, imgUrl }
+          const item = { goodsId, goodsName, price, property, cost, goodsAmount, imgUrl }
           list.push(item)
           shopCars.push(shopCarId)
+          prices.push(price)
+          costs.push(cost)
+          amounts.push(goodsAmount)
         }
       }
       const status = 1
       const totalprice = vm.priceAll
-      const orderDetail = { list, totalprice, status, shopCars }
+      const orderDetail = { list, totalprice, status, shopCars, prices, costs, amounts }
       vm.$router.replace({ path: '/confirmOrder' })
       vm.setOrder(orderDetail)
     }

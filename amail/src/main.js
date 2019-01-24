@@ -7,7 +7,7 @@ import FastClick from 'fastclick'
 import './assets/iconfonts/iconfont.css'
 import './assets/styles/border.css'
 import './assets/styles/reset.css'
-axios.defaults.baseURL = 'http://www.lvxiaoluo.com/lvxiaoluo'
+
 Vue.prototype.$http = axios
 FastClick.attach(document.body)
 Vue.config.productionTip = false

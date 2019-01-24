@@ -36,6 +36,7 @@
 import Vue from 'vue'
 import { mapGetters, mapMutations } from 'vuex'
 import { Tab, Tabs } from 'vant'
+import api from '@/serverAPI.js'
 import homehead from './head'
 import goodsList from './goodsList'
 import allgoodsList from './allgoodsList'
@@ -74,7 +75,7 @@ export default {
     // 获取商品类型
     getTypes () {
       const vm = this
-      vm.$http.post('/ShopTypeController/showAll')
+      vm.$http.post(api.getType)
         .then(res => {
           const data = res.data.data
           vm.arrTypes = data.list

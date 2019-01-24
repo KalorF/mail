@@ -31,6 +31,7 @@
 
 <script>
 import { mapMutations } from 'vuex'
+import api from '@/serverAPI.js'
 export default {
   mounted () {
     this.$refs.listcontent.addEventListener('scroll', this.listScroll, true)
@@ -64,7 +65,7 @@ export default {
     getAllGoods () {
       const vm = this
       let page = vm.page
-      vm.$http.post('/ShopGoodsController/selectAllGoods/' + page)
+      vm.$http.post(api.allGoods + page)
         .then(res => {
           const data = res.data.data
           console.log(res)

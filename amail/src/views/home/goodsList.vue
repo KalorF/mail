@@ -27,6 +27,7 @@
 
 <script>
 import { mapMutations } from 'vuex'
+import api from '@/serverAPI.js'
 export default {
   mounted () {
     this.$refs.listcontent.addEventListener('scroll', this.listScroll, true)
@@ -55,7 +56,7 @@ export default {
       const name = vm.typeName
       const params = new URLSearchParams()
       params.append('goodsType', name)
-      vm.$http.post('/ShopGoodsController/searchGoodsInfoByType/' + page, params)
+      vm.$http.post(api.selectTypeGoods + page, params)
         .then(res => {
           const data = res.data.data
           data.list.map(value => {

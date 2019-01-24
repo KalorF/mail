@@ -54,6 +54,7 @@
 
 <script>
 import Vue from 'vue'
+import api from '@/serverAPI.js'
 import { mapMutations } from 'vuex'
 import { Dialog, Toast } from 'vant'
 Vue.use(Dialog).use(Toast)
@@ -74,7 +75,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('shopStatus', -1)
-      vm.$http.post('/ShopOrderController/customerShopOrder', params)
+      vm.$http.post(api.customerShopOrder, params)
         .then(res => {
           console.log(res)
           vm.list = res.data
@@ -102,7 +103,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('orderId', vm.calIndex)
-      vm.$http.post('/ShopOrderController/updateOrderIsDel', params)
+      vm.$http.post(api.updateOrderIsDel, params)
         .then(res => {
           console.log(res)
           vm.getData()
@@ -119,6 +120,9 @@ export default {
     toPay (item) {
       const vm = this
       let list = []
+      let prices = []
+      let costs = []
+      let amounts = []
       //   let shopCars = []
       let shopCars = item.shopOrder.shopCarIds
       let thislist = item.shopOrderDetailList
@@ -129,10 +133,14 @@ export default {
         const property = thislist[i].goodsProperty
         const goodsAmount = thislist[i].goodsNumber
         const imgUrl = thislist[i].imgUrl
+        const cost = thislist[i].cost
         // const shopCarId = thislist[i].shopCarId
         // const item2 = { shopCarIds }
-        const item = { goodsId, goodsName, price, property, goodsAmount, imgUrl }
+        const item = { goodsId, goodsName, price, property, goodsAmount, imgUrl, cost }
         list.push(item)
+        prices.push(price)
+        costs.push(cost)
+        amounts.push(goodsAmount)
         // shopCars.push(item2)
       }
       const status = 2
@@ -141,7 +149,7 @@ export default {
       const userName = item.shopOrder.userName
       const phone = item.shopOrder.phone
       const address = item.shopOrder.address
-      const orderDetail = { list, totalprice, status, shopCars, outTradeNo, userName, phone, address }
+      const orderDetail = { list, totalprice, status, shopCars, outTradeNo, prices, costs, amounts, userName, phone, address }
       vm.$router.replace({ path: '/confirmOrder' })
       vm.setOrder(orderDetail)
     }
@@ -233,6 +241,8 @@ export default {
             line-height .3rem
             margin-bottom .1rem
             border-left 3px solid $themeColor
+            color #626262
+            font-size 13px
             span:nth-child(1)
                 margin-left .1rem
         .address
@@ -240,16 +250,16 @@ export default {
             margin-left auto
             margin-right auto
             display flex
-            height .5rem
-            padding-bottom .3rem
-            color #393E46
+            padding-bottom .25rem
+            color #626262
+            font-size 13px
             div:nth-child(1)
                 border-left 3px solid $themeColor
                 width 15%
                 padding-left .1rem
                 height .27rem
             p
-                line-height 15px
+                line-height 16px
         .footer
             width 90%
             height .6rem

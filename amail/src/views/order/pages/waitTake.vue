@@ -36,7 +36,6 @@
             <div class="footer">
                 <button @click="cfmTake(item.shopOrder.orderId)">确认收货</button>
                 <button @click="goLogs(item)">查看物流</button>
-                <!-- <button @click="refund(index)">申请退款</button> -->
             </div>
         </div>
 
@@ -56,6 +55,7 @@
 
 <script>
 import Vue from 'vue'
+import api from '@/serverAPI.js'
 import { Dialog, Toast } from 'vant'
 Vue.use(Dialog).use(Toast)
 export default {
@@ -76,7 +76,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('shopStatus', 1)
-      vm.$http.post('/ShopOrderController/customerShopOrder', params)
+      vm.$http.post(api.customerShopOrder, params)
         .then(res => {
           console.log(res)
           vm.list = res.data
@@ -103,7 +103,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('orderId', vm.takeIndex)
-      vm.$http.post('/ShopOrderController/confirmReceipt', params)
+      vm.$http.post(api.confirmReceipt, params)
         .then(res => {
           console.log(res)
           vm.getData()
@@ -208,6 +208,8 @@ export default {
             line-height .3rem
             margin-bottom .1rem
             border-left 3px solid $themeColor
+            color #626262
+            font-size 13px
             span:nth-child(1)
                 margin-left .1rem
         .address
@@ -215,16 +217,16 @@ export default {
             margin-left auto
             margin-right auto
             display flex
-            height .5rem
-            padding-bottom .3rem
-            color #393E46
+            padding-bottom .25rem
+            color #626262
+            font-size 13px
             div:nth-child(1)
                 border-left 3px solid $themeColor
                 width 15%
                 padding-left .1rem
                 height .27rem
             p
-                line-height 15px
+                line-height 16px
         .footer
             width 90%
             height .6rem

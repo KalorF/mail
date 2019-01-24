@@ -24,6 +24,7 @@
 
 <script>
 import { mapMutations } from 'vuex'
+import api from '@/serverAPI.js'
 export default {
   data () {
     return {
@@ -71,7 +72,7 @@ export default {
       const vm = this
       const params = new URLSearchParams()
       params.append('goodsName', vm.searchValue)
-      vm.$http.post('/ShopGoodsController/searchGoods', params)
+      vm.$http.post(api.searchGoods, params)
         .then(res => {
           vm.searchList = res.data.data.shopGoodses
           console.log(vm.searchList)
