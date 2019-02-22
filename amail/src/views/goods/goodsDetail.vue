@@ -61,7 +61,8 @@
                             integer
                             :min="1"
                             :max="maxNumber"
-                            /></div>
+                            />
+                        </div>
                     </div>
                     <button @click="confirmSel">确认选择</button>
                 </div>

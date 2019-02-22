@@ -4,7 +4,7 @@
           <homehead></homehead>
         </div>
         <div class="topTab">
-          <van-tabs v-model="active" color='#31C27C' :line-width='30' swipeable class="thistab" animated>
+          <van-tabs v-model="active" @change="selTab" color='#31C27C' :line-width='30' swipeable class="thistab" animated>
             <van-tab :title="'全部'"><allgoodsList></allgoodsList></van-tab>
             <van-tab v-for="(item,index) in arrTypes" :title="item.typeName" :key="index"><goodsList :typeName="item.typeName"></goodsList></van-tab>
           </van-tabs>
@@ -21,10 +21,13 @@
         <!-- <goodsList></goodsList> -->
         <transition name="more">
           <div class="select-more" v-show="moreSelect">
-              <div class="more-title">选择类型</div>
+              <div class="more-title">
+                选择类型
+                <span @click="cancelSel">取消</span>
+              </div>
               <div class="more-content">
-                <div  @click="selectAll">全部</div>
-                <div v-for="(item,index) in arrTypes" :key="index" @click="select(index+1)">{{item.typeName}}</div>
+                <div  @click="selectAll" :class="{active: thisIndex == 0}">全部</div>
+                <div v-for="(item,index) in arrTypes" :class="{active: thisIndex == index + 1 }" :key="index" @click="select(index+1)">{{item.typeName}}</div>
               </div>
           </div>
         </transition>
@@ -46,8 +49,8 @@ export default {
     return {
       active: 0,
       isMore: false,
-      arrTypes: []
-      // typeList: ['全部']
+      arrTypes: [],
+      thisIndex: 0
     }
   },
   components: {
@@ -87,6 +90,10 @@ export default {
           console.log(err)
         })
     },
+    selTab (e) {
+      const vm = this
+      vm.thisIndex = e
+    },
     // 选择商品类型
     selectMore () {
       const vm = this
@@ -96,18 +103,22 @@ export default {
     selectAll () {
       const vm = this
       vm.active = 0
+      vm.thisIndex = 0
       vm.isMore = false
       vm.moreSlect(vm.isMore)
     },
     select (index) {
       const vm = this
       vm.active = index
+      vm.thisIndex = index
+      vm.isMore = false
+      vm.moreSlect(vm.isMore)
+    },
+    cancelSel () {
+      const vm = this
       vm.isMore = false
       vm.moreSlect(vm.isMore)
     }
-    // toggle (index) {
-    //   this.active = index
-    // },
   }
 }
 </script>
@@ -167,6 +178,9 @@ export default {
       // color #a39e9e
       color #6d6d6d
       font-size 15px
+      span
+        float right
+        margin-right 4%
     .more-content
       position relative
       top .25rem
@@ -182,6 +196,9 @@ export default {
         color #3d3d3d
         border 1px solid #aaa
         margin-bottom .2rem
+      div.active
+        border 1px solid $themeColor
+        color $themeColor
 .more-enter-active,.more-leave-active
   transition all .3s
 .more-enter,.more-leave-to

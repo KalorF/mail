@@ -5,16 +5,12 @@
                 <li class="item" v-for="(item,index) in allGoods" :key="index" @click="toDetail(item)">
                     <div class="content">
                         <img :src="item.shopImgs[0].imgUrl">
-                        <!-- <img src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=3753685189,4245843287&fm=26&gp=0.jpg"> -->
                         <p class="title">{{item.goodsName}}</p>
-                        <!-- <p class="title">电风扇犯得上反对是否</p> -->
                         <div class="item-footer">
                             <p>
                                 <span class="price-icon">￥</span>
                                 <span class="price">{{item.goodsDetail[0].price}}</span>
                                 <span class="had-pay">{{item.goodsPayNum}}人已付款</span>
-                                <!-- <span class="price">3232</span>
-                                <span class="had-pay">6人已付款</span> -->
                             </p>
                         </div>
                     </div>
